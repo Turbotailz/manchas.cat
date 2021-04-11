@@ -31,7 +31,8 @@
         <h2>Upload images</h2>
         <ul>
           <li v-for="file in files" :key="file.name">
-            {{ file.name }} - {{ file.size }} b
+            {{ file.file.name }} - {{ file.file.size }}b
+            <progress v-if="file.progress.total" :max="file.progress.total" :value="file.progress.loaded" />
           </li>
         </ul>
         <label for="uploadFile">Add images</label>
@@ -44,6 +45,7 @@
 
 <script>
 import http from '@/utils/http';
+import exifr from 'exifr';
 
 export default {
   name: 'Admin',
@@ -73,9 +75,15 @@ export default {
     },
     addFiles(files) {
       if (!files) return;
-      ([...files]).forEach(file => {
-        console.dir(file);
-        this.files.push({ ...file, progress: null, success: null });
+      ([...files]).forEach(async (fileItem) => {
+        const taken_at = await exifr.parse(fileItem, ['DateTimeOriginal']);
+        const file = {
+          file: fileItem,
+          progress: { total: null, loaded: null },
+          success: null,
+          taken_at
+        }
+        this.files.push(file);
       });
     },
     removeFile(file) {
@@ -83,18 +91,28 @@ export default {
     },
     async doUpload() {
       const promises = this.files.map(async (file) => {
+        console.log(file);
         try {
           const formData = new FormData();
-          formData.append('file', file);
-          await http.post('/upload', formData, {
-            onUploadProgress: progressEvent => console.log(progressEvent)
+          formData.append('file', file.file);
+          const result = await http.post('/upload', formData, {
+            onUploadProgress: ({ total, loaded }) => {
+              file.progress.total = total;
+              file.progress.loaded = loaded;
+            }
           });
           file.success = true;
+          return result;
         } catch (error) {
           file.success = false;
           console.error(error);
         }
       });
+
+      const results = await Promise.all(promises);
+      console.log(results);
+
+      await this.getImages();
     }
   },
   created() {
