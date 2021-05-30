@@ -1,17 +1,36 @@
 <template>
   <q-page class="flex flex-center">
-    <div class="photographs">
+    <div class="photographs" v-touch-swipe="handleSwipe">
       <template v-if="images.length">
-        <transition-group name="polaroid-pictures" mode="in-out">
+        <transition-group name="polaroid-pictures">
           <photograph v-for="image in displayedImages" :key="`image_${image.id}`" v-bind="image" @click="goToImage(image.id)" />
-          <photograph v-if="displayedImages.length < 3" key="image_last" type="last" @click="goToAllImages" />
+          <photograph v-if="displayedImages.length < 3" key="image_last" @click="goToAllImages">
+            <div class="text-image">
+              <p>See all images...</p>
+            </div>
+          </photograph>
         </transition-group>
       </template>
+      <template v-else>
+          <photograph v-if="loading" key="image_loading">
+            <div class="text-image">
+              <q-spinner color="white" size="64" />
+              <p class="q-mt-lg">Fetching images...</p>
+            </div>
+          </photograph>
+          <photograph v-else-if="loadingError" key="image_error" @click="refresh">
+            <div class="text-image error">
+              <p class="q-mb-lg">Oh noes :( </p>
+              <p class="q-mb-lg">Couldn't fetch images</p>
+              <p>Try again</p>
+            </div>
+          </photograph>
+      </template>
     </div>
-    <button @click="prevImage" id="prev-button">
+    <button v-if="images.length > 3" @click="prevImage" id="prev-button" class="home-buttons">
       &lt;
     </button>
-    <button @click="nextImage" id="next-button">
+    <button v-if="images.length > 3" @click="nextImage" id="next-button" class="home-buttons">
       &gt;
     </button>
   </q-page>
@@ -29,12 +48,22 @@ export default defineComponent({
     Photograph,
   },
   setup() {
+    let loading = ref(true);
+    let loadingError = ref(false);
     let images = ref([]);
     let currentIndex = ref(0);
     const router = useRouter();
     async function refresh() {
-      const { data: { data } } = await api.get('/all/latest');
-      images.value = data;
+      loading.value = true;
+      loadingError.value = false;
+      try {
+        const { data: { data } } = await api.get('/all/latest');
+        images.value = data;
+      } catch {
+        loadingError.value = true;
+      } finally {
+        loading.value = false;
+      }
     }
     const displayedImages = computed(() => {
       const { value } = images;
@@ -58,10 +87,25 @@ export default defineComponent({
     function goToAllImages() {
       router.push({ name: 'all-images'});
     }
+    function handleSwipe(event) {
+      const { direction } = event;
+      switch (direction) {
+        case 'left':
+          prevImage();
+          return;
+        case 'right':
+          nextImage();
+          return;
+        default:
+          return;
+      }
+    }
 
     refresh();
 
     return {
+      loading,
+      loadingError,
       images,
       displayedImages,
       refresh,
@@ -69,6 +113,7 @@ export default defineComponent({
       prevImage,
       goToImage,
       goToAllImages,
+      handleSwipe,
     }
   }
 })
@@ -76,10 +121,16 @@ export default defineComponent({
 
 <style lang="scss">
 .photographs {
-  width: 550px;
-  height: 700px;
+  width: 250px;
+  max-width: 80%;
+  height: 350px;
   position: relative;
   perspective: 1000px;
+
+  @media (min-width: $breakpoint-sm-min) {
+    width: 550px;
+    height: 700px;
+  }
 
   .polaroid {
     position: absolute;
@@ -113,36 +164,62 @@ export default defineComponent({
       transform: rotateX(5deg) rotateZ(-30deg) translate(-120px, -40px);
       z-index: 5;
     }
+
+    .text-image {
+      background: black;
+      height: 550px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      p {
+        font-size: 2rem;
+        text-align: center;
+        line-height: 1;
+
+        @media (min-width: $breakpoint-sm-min) {
+          font-size: 5rem;
+        }
+      }
+
+      &.error p {
+        font-size: 1.5rem;
+
+        @media (min-width: $breakpoint-sm-min) {
+          font-size: 4rem;
+        }
+      }
+    }
+  }
+}
+
+.home-buttons {
+  position: absolute;
+  font-size: 3rem;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: transform .2s;
+  bottom: 5%;
+
+  &:hover {
+    transform: scale(1.5);
+  }
+
+  @media (min-width: $breakpoint-sm-min) {
+    bottom: 50%;
+    font-size: 6rem;
   }
 }
 
 #prev-button {
-  position: absolute;
   left: 80px;
-  font-size: 6rem;
-  background: transparent;
-  border: none;
-  color: white;
-  cursor: pointer;
-  transition: transform .2s;
-
-  &:hover {
-    transform: scale(1.5);
-  }
 }
 #next-button {
-  position: absolute;
   right: 80px;
-  font-size: 6rem;
-  background: transparent;
-  border: none;
-  color: white;
-  cursor: pointer;
-  transition: transform .2s;
-
-  &:hover {
-    transform: scale(1.5);
-  }
 }
 
 .polaroid-pictures {
