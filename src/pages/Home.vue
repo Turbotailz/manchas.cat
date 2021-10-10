@@ -204,6 +204,7 @@ export default defineComponent({
   cursor: pointer;
   transition: transform .2s;
   bottom: 5%;
+  font-family: 'Permanent Marker', '-apple-system', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
   &:hover {
     transform: scale(1.5);

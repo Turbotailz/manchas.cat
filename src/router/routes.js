@@ -3,8 +3,7 @@ import api from '../util/api';
 const auth = async (to, from, next) => {
   try {
     const { data } = await api.get('/auth');
-    if (data.id) return next();
-    next({ name: 'login' });
+    return data.id ? next() : next({ name: 'login' });
   } catch (error) {
     next({ name: 'login' });
   }
@@ -26,7 +25,7 @@ const routes = [
     beforeEnter: async (to, from, next) => {
       try {
         const { data } = await api.get('/auth');
-        if (data.id) return next({ name: 'login' });
+        return data.id ? next({ name: 'login' }) : next();
         next();
       } catch (error) {
         next();

@@ -11,12 +11,9 @@
     <div class="row q-mb-md q-col-gutter-md" v-if="routeParams.length">
       <div class="col-6" v-for="param in routeParams" :key="`${path}?${param.key}`">
         <q-input
-          v-if="param.type === 'number'"
           v-model="userParams[param.key]"
-          type="number"
           :label="param.key"
           color="green"
-          :rules="[ param.validate || 'Page number must be between 1 and 999999' ]"
           :ref="`${path}?${param.key}`"
         />
       </div>
@@ -149,8 +146,13 @@ export default {
     }
   },
 
-  mounted() {
-    this.getResponse();
+  async mounted() {
+    await this.getResponse();
+
+    // little hacky boi to use a random image for the "specific image" API doc
+    if (this.userParams.id === '') {
+      this.userParams.id = this.response.id;
+    }
   }
 }
 </script>

@@ -34,9 +34,7 @@
 </template>
 
 <script>
-
-import { defineComponent, ref, computed } from 'vue';
-import api from '../util/api';
+import { defineComponent, ref } from 'vue';
 import ApiReference from 'components/ApiReference';
 
 export default defineComponent({
@@ -68,13 +66,7 @@ export default defineComponent({
     const routeParams = ref({
       IMAGE_ID: {
         key: 'id',
-        type: 'number',
-        default: 750,
-        validate: (value) => {
-          const num = Number(value);
-          if (!num) return false;
-          return num > 0 && num <= 999999999;
-        }
+        default: '',
       }
     });
 

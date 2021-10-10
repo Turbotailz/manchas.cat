@@ -3,7 +3,7 @@
     <q-infinite-scroll @load="onLoad">
       <div class="images row q-col-gutter-md q-col-gutter-md-xl">
         <template v-for="image in images" :key="`image_${image.id}`">
-          <div v-if="image.source" class="col-xs-6 col-md-3">
+          <div v-if="image.source_medium" class="col-xs-6 col-md-3">
             <photograph v-bind="image" @click="goToImage(image.id)" />
           </div>
         </template>

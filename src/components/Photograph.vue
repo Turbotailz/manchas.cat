@@ -1,7 +1,7 @@
 <template>
   <figure class="polaroid">
-    <picture v-if="source">
-      <q-img :src="source" :ratio="1" fit="cover" alt="Manchas" spinner-color="white" />
+    <picture v-if="source_medium">
+      <q-img :src="source_medium" :placeholder-src="source_small" :ratio="1" fit="cover" alt="Manchas" spinner-color="white" />
     </picture>
     <slot v-else />
     <figcaption class="text-black">
@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import { isValid, parseJSON } from 'date-fns';
+import parseDate from '../util/parse-date';
 
 export default {
   name: 'Photograph',
@@ -21,7 +21,11 @@ export default {
       type: String,
       default: 'image',
     },
-    source: {
+    source_medium: {
+      type: String,
+      default: '',
+    },
+    source_small: {
       type: String,
       default: '',
     },
@@ -32,13 +36,7 @@ export default {
   },
   computed: {
     date() {
-      const date = parseJSON(this.taken_at);
-      if (isValid(date)) {
-        const [ day, month, year ] = [ date.getDate(), date.getMonth(), date.getFullYear() ];
-        return `${day}/${month}/${year}`;
-      }
-
-      return ' ';
+      return parseDate(this.taken_at);
     },
   }
 }
@@ -54,6 +52,7 @@ export default {
   display: flex;
   flex-direction: column;
   box-shadow: 0 0 64px rgba(0,0,0,.75);
+  font-family: 'Permanent Marker', '-apple-system', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
   @media (min-width: $breakpoint-sm-min) {
     padding: 1.5rem;

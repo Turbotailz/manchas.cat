@@ -1,7 +1,50 @@
 <template>
   <q-page id="admin" class="container" padding>
-    <div class="row">
-      <div class="col"></div>
+    <div class="row q-gutter-x-lg">
+      <div class="col">
+        <q-table
+          title="Images"
+          :rows="images"
+          row-key="id"
+          v-model:pagination="imagesPagination"
+          :loading="imagesLoading"
+          @request="getImages"
+          dark
+          :rows-per-page-options="[10]"
+          :columns="imageColumns"
+        >
+          <template #body="props">
+            <q-tr :props="props" :key="props.row.id">
+              <q-td key="image" :props="props">
+                <q-img :src="props.row.source_small" :ratio="1" width="100px" />
+              </q-td>
+              <q-td key="id" :props="props">
+                {{ props.row.id }}
+              </q-td>
+              <q-td key="sources" :props="props">
+                <div>
+                  <q-chip color="white" text-color="black" size="sm" class="text-weight-bold">Small</q-chip>
+                  <a :href="props.row.source_small" target="_blank">{{ props.row.source_small }}</a>
+                </div>
+                <div>
+                  <q-chip color="white" text-color="black" size="sm" class="text-weight-bold">Medium</q-chip>
+                  <a :href="props.row.source_medium" target="_blank">{{ props.row.source_medium }}</a>
+                </div>
+                <div>
+                  <q-chip color="white" text-color="black" size="sm" class="text-weight-bold">Large</q-chip>
+                  <a :href="props.row.source_large" target="_blank">{{ props.row.source_large }}</a>
+                </div>
+              </q-td>
+              <q-td key="taken_at" :props="props">
+                {{ parseDate(props.row.taken_at) }}
+              </q-td>
+              <q-td key="delete" :props="props">
+                <q-btn icon="delete" dense @click="deleteImage(props.row.id)" />
+              </q-td>
+            </q-tr>
+          </template>
+        </q-table>
+      </div>
       <div class="col-4">
         <q-uploader
           class="full-width full-height"
@@ -10,6 +53,8 @@
           multiple
           accept=".jpg, image/*"
           @rejected="onRejected"
+          @uploaded="onUploaded"
+          @failed="onFailed"
           color="black"
           dark
           :max-file-size="104857600"
@@ -18,129 +63,110 @@
         />
       </div>
     </div>
-
-<!--      <section class="images">-->
-<!--        <h2>-->
-<!--          Images-->
-<!--          <span v-if="imagesPagination">({{imagesPagination.total}} total)</span>-->
-<!--        </h2>-->
-<!--        <ul>-->
-<!--          <li v-for="image in images" :key="image.id">-->
-<!--            <img :src="image.source" :alt="image.caption">-->
-<!--            <div class="image-data">-->
-<!--              <div>-->
-<!--                <span class="label">ID</span>-->
-<!--                <span>{{ image.id }}</span>-->
-<!--              </div>-->
-<!--              <div>-->
-<!--                <span class="label">Caption</span>-->
-<!--                <span>{{ image.caption || 'none' }}</span>-->
-<!--              </div>-->
-<!--              <div>-->
-<!--                <span class="label">Taken at</span>-->
-<!--                <span>{{ image.taken_at || 'none' }}</span>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--          </li>-->
-<!--        </ul>-->
-<!--      </section>-->
-<!--      <section class="upload" @drop.prevent="handleFileDrop" @dragover.prevent>-->
-<!--        <h2>Upload images</h2>-->
-<!--        <ul>-->
-<!--          <li v-for="file in files" :key="file.name">-->
-<!--            {{ file.file.name }} - {{ file.file.size }}b-->
-<!--            <progress v-if="file.progress.total" :max="file.progress.total" :value="file.progress.loaded" />-->
-<!--          </li>-->
-<!--        </ul>-->
-<!--        <label for="uploadFile">Add images</label>-->
-<!--        <input type="file" id="uploadFile" multiple="true" @change="handleFileInput">-->
-<!--        <button :disabled="!canUpload" @click="doUpload">Upload</button>-->
-<!--      </section>-->
   </q-page>
 </template>
 
 <script>
 import api from '../util/api';
-import exifr from 'exifr';
+import parseDate from '../util/parse-date';
+
+const imageColumns = () => [
+  {
+    name: 'image',
+    label: 'Image',
+    align: 'left',
+  },
+  {
+    name: 'id',
+    label: 'ID',
+    align: 'left',
+  },
+  {
+    name: 'sources',
+    label: 'Sources',
+    align: 'left',
+  },
+  {
+    name: 'taken_at',
+    label: 'Date taken',
+    align: 'left',
+  },
+  {
+    name: 'delete',
+    label: 'Delete',
+    align: 'right',
+  },
+];
 
 export default {
   name: 'Admin',
   data() {
     return {
-      images: null,
+      images: [],
       imagesPagination: null,
+      imagesLoading: null,
       files: [],
     }
   },
-  computed: {
-    canUpload() {
-      return this.files.length;
-    }
-  },
   methods: {
-    async getImages(page = 1) {
-      const { data: { data, pagination } } = await api.get('/all', { params: { page }});
-      this.images = data;
-      this.imagesPagination = pagination;
-    },
-    handleFileDrop(e) {
-      this.addFiles(e.dataTransfer.files);
-    },
-    handleFileInput(e) {
-      this.addFiles(e.target.files);
-    },
-    addFiles(files) {
-      if (!files) return;
-      ([...files]).forEach(async (fileItem) => {
-        const taken_at = await exifr.parse(fileItem, ['DateTimeOriginal']);
-        const file = {
-          file: fileItem,
-          progress: { total: null, loaded: null },
-          success: null,
-          taken_at
-        }
-        this.files.push(file);
-      });
-    },
-    removeFile(file) {
-      this.files = this.files.filter(f => f !== file);
-    },
-    async doUpload() {
-      const promises = this.files.map(async (file) => {
-        console.log(file);
-        try {
-          const formData = new FormData();
-          formData.append('file', file.file);
-          const result = await api.post('/upload', formData, {
-            onUploadProgress: ({ total, loaded }) => {
-              file.progress.total = total;
-              file.progress.loaded = loaded;
-            }
-          });
-          file.success = true;
-          return result;
-        } catch (error) {
-          file.success = false;
-          console.error(error);
-        }
-      });
-
-      const results = await Promise.all(promises);
-      console.log(results);
-
-      await this.getImages();
+    async getImages({ pagination: { page = 1 }}) {
+      try {
+        this.imagesLoading = true;
+        const { data: { data, pagination } } = await api.get('/all', { params: { page }});
+        this.images = data;
+        this.imagesPagination = {
+          page: pagination.currentPage,
+          rowsPerPage: pagination.perPage,
+          rowsNumber: pagination.total,
+        };
+      } catch {
+        this.images = [];
+        this.imagesPagination = null;
+      } finally {
+        this.imagesLoading = false;
+      }
     },
     onRejected(rejectedEntries) {
-      // Notify plugin needs to be installed
-      // https://quasar.dev/quasar-plugins/notify#Installation
       this.$q.notify({
         type: 'negative',
         message: `${rejectedEntries.length} file(s) did not pass validation constraints`
-      })
-    }
+      });
+    },
+    onUploaded(info) {
+      console.log(info)
+      this.$q.notify({
+        type: 'positive',
+        message: `${info.files.length} images were uploaded successfully`
+      });
+    },
+    onFailed(info) {
+      this.$q.notify({
+        type: 'negative',
+        message: `${info.files.length} images could not be uploaded`
+      });
+    },
+    parseDate,
+    async deleteImage(id) {
+      try {
+        await api.delete(`/${id}`);
+        this.$q.notify({
+          type: 'positive',
+          message: `Image ID ${id} was deleted`
+        });
+        this.getImages({ pagination: { page: this.imagesPagination.page }});
+      } catch {
+        this.$q.notify({
+          type: 'negative',
+          message: `Image ID ${id} could not be deleted`
+        });
+      }
+    },
   },
   created() {
-    this.getImages();
+    this.getImages({ pagination: { page: 1 }});
+  },
+  computed: {
+    imageColumns
   }
 }
 </script>
@@ -156,5 +182,9 @@ export default {
 
 .q-uploader__file + .q-uploader__file {
   margin: 0;
+}
+
+a {
+  color: $primary;
 }
 </style>

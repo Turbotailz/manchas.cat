@@ -49,6 +49,7 @@ module.exports = configure(function (ctx) {
 
       env: {
         API_URL: ctx.dev ? 'http://localhost:6969' : 'https://api.manchas.cat',
+        DATE_FORMAT: 'dd MMM yyyy'
       },
 
       // transpile: false,
