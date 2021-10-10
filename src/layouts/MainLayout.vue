@@ -6,6 +6,7 @@
           <q-route-tab label="All" to="/images" exact />
           <q-route-tab label="Random" to="/random" exact />
           <q-route-tab label="API" to="/api" exact />
+          <q-route-tab label="Admin" to="/admin" exact />
         </q-tabs>
     </q-header>
 

@@ -1,5 +1,40 @@
+import api from '../util/api';
+
+const auth = async (to, from, next) => {
+  try {
+    const { data } = await api.get('/auth');
+    if (data.id) return next();
+    next({ name: 'login' });
+  } catch (error) {
+    next({ name: 'login' });
+  }
+};
 
 const routes = [
+  {
+    path: '/admin',
+    beforeEnter: auth,
+    component: () => import('layouts/AdminLayout.vue'),
+    children: [
+      { name: 'admin', path: '', component: () => import('pages/Admin.vue')}
+    ]
+  },
+
+  {
+    name: 'login',
+    path: '/login',
+    beforeEnter: async (to, from, next) => {
+      try {
+        const { data } = await api.get('/auth');
+        if (data.id) return next({ name: 'login' });
+        next();
+      } catch (error) {
+        next();
+      }
+    },
+    component: () => import('layouts/LoginLayout.vue'),
+  },
+
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
