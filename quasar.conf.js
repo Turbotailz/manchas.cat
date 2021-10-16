@@ -48,7 +48,7 @@ module.exports = configure(function (ctx) {
       vueRouterMode: 'history', // available values: 'hash', 'history'
 
       env: {
-        API_URL: ctx.dev ? 'http://localhost:6969' : 'https://api.manchas.cat',
+        API_URL: 'https://api.manchas.cat',
         DATE_FORMAT: 'dd MMM yyyy'
       },
 
