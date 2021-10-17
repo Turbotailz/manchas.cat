@@ -48,7 +48,7 @@
       <div class="col-4">
         <q-uploader
           class="full-width full-height"
-          url="http://localhost:6969/upload"
+          :url="uploadUrl"
           label="Upload images"
           multiple
           accept=".jpg, image/*"
@@ -61,6 +61,7 @@
           with-credentials
           field-name="file"
         />
+        {{ uploadUrl }}
       </div>
     </div>
   </q-page>
@@ -166,7 +167,10 @@ export default {
     this.getImages({ pagination: { page: 1 }});
   },
   computed: {
-    imageColumns
+    imageColumns,
+    uploadUrl() {
+      return process.env.API_URL + '/upload';
+    }
   }
 }
 </script>
