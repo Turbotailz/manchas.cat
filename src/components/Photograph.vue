@@ -1,7 +1,7 @@
 <template>
   <figure class="polaroid">
     <picture v-if="source_medium">
-      <q-img :src="source_medium" :placeholder-src="source_small" :ratio="1" fit="cover" alt="Manchas" spinner-color="white" />
+      <q-img :src="source_medium" :placeholder-src="source_small" :ratio="1" fit="cover" :alt="`Manchas on ${date}`" spinner-color="white" no-transition />
     </picture>
     <slot v-else />
     <figcaption class="text-black">
@@ -47,11 +47,11 @@ export default {
   margin: 0;
   height: 100%;
   width: 100%;
-  background: linear-gradient(180deg, #bbaca4, #fdfcf5);
+  background: linear-gradient(180deg, #f5f2f1, #fdfcf5);
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 0 64px rgba(0,0,0,.75);
+  box-shadow: 0 0 64px rgba(0,0,0,.5);
   font-family: 'Permanent Marker', '-apple-system', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
   @media (min-width: $breakpoint-sm-min) {
@@ -60,7 +60,7 @@ export default {
 
   .q-img__content, .q-img__loading {
     transition: none;
-    box-shadow: inset 0 0 128px black, inset 0 0 8px rgba(0,0,0,.5);
+    box-shadow: inset 0 0 128px rgba(0,0,0,0.666), inset 0 0 8px rgba(0,0,0,.5);
   }
 
   picture {
@@ -77,6 +77,13 @@ export default {
     p {
       font-size: 1.25rem;
     }
+  }
+}
+
+.body--dark {
+  .polaroid {
+    background: linear-gradient(180deg, #bbaca4, #fdfcf5);
+    box-shadow: 0 0 64px rgba(0, 0, 0, .75);
   }
 }
 </style>

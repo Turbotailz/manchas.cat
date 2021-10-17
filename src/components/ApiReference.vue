@@ -175,7 +175,7 @@ export default {
 
   p {
     width: 100%;
-    color: rgba(255, 255, 255, .75);
+    opacity: .8;
   }
 
   code {
@@ -209,17 +209,11 @@ export default {
   .pre-container {
     width: 100%;
     padding: .5rem 1rem;
-    background: black;
-    border: 1px solid rgba(255, 255, 255, .5);
+    border: 1px solid black;
     border-radius: 4px;
-    color: rgba(255, 255, 255, .66);
     font-size: .75rem;
     font-family: monospace;
     margin-bottom: 1rem;
-
-    header {
-      color: rgba(255, 255, 255, .33);
-    }
   }
 
   pre {
@@ -228,6 +222,14 @@ export default {
     max-height: 250px;
     max-width: 100%;
     overflow: auto;
+  }
+}
+
+.body--dark {
+  .pre-container {
+    background: black;
+    color: rgba(255, 255, 255, .66);
+    border: 1px solid rgba(255, 255, 255, .5);
   }
 }
 </style>

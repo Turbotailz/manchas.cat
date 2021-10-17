@@ -149,13 +149,13 @@ export default defineComponent({
     }
 
     &:nth-child(2) {
-      filter: brightness(.5);
+      filter: brightness(.9);
       transform: rotateX(5deg) rotateZ(-15deg) translate(-60px, -20px);
       z-index: 20;
     }
 
     &:nth-child(3) {
-      filter: brightness(.25);
+      filter: brightness(.8);
       transform: rotateX(5deg) rotateZ(-30deg) translate(-120px, -40px);
       z-index: 10;
     }
@@ -166,13 +166,13 @@ export default defineComponent({
     }
 
     .text-image {
-      background: black;
       height: 550px;
       padding: 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      box-shadow: inset 0 0 64px rgba(0,0,0,.2);
 
       p {
         font-size: 2rem;
@@ -200,7 +200,6 @@ export default defineComponent({
   font-size: 3rem;
   background: transparent;
   border: none;
-  color: white;
   cursor: pointer;
   transition: transform .2s;
   bottom: 5%;
@@ -221,6 +220,32 @@ export default defineComponent({
 }
 #next-button {
   right: 80px;
+}
+
+.body--dark {
+  .home-buttons {
+    color: white;
+  }
+
+  .photographs {
+    .polaroid {
+      &:nth-child(1) {
+        filter: brightness(1);
+      }
+
+      &:nth-child(2) {
+        filter: brightness(.5);
+      }
+
+      &:nth-child(3) {
+        filter: brightness(.25);
+      }
+    }
+  }
+
+  .text-image {
+    background: black;
+  }
 }
 
 .polaroid-pictures {

@@ -94,13 +94,13 @@ export default defineComponent({
     }
 
     .text-image {
-      background: black;
       height: 550px;
       padding: 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      box-shadow: inset 0 0 64px rgba(0,0,0,.2);
 
       p {
         font-size: 2rem;
@@ -129,7 +129,6 @@ export default defineComponent({
   font-size: 2rem;
   background: transparent;
   border: none;
-  color: white;
   cursor: pointer;
   transition: transform .2s;
 
@@ -151,6 +150,16 @@ export default defineComponent({
   &-leave-to {
     opacity: 0;
     transform: scale(0.9) translateX(50%);
+  }
+}
+
+.body--dark {
+  .text-image {
+    background: black;
+  }
+
+  #random {
+    color: white;
   }
 }
 </style>
